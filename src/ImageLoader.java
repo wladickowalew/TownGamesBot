@@ -12,12 +12,10 @@ import java.util.Collections;
 
 public class ImageLoader {
     private int IMAGE_COUNT = 5;
-    private String town;
     private ArrayList<URL> imageUrls;
 
     public ImageLoader(String town){
-        this.town = town;
-        imageUrls = getImageUrls();
+        imageUrls = getImageUrls(town);
     }
 
     public boolean isEmpty(){
@@ -33,7 +31,7 @@ public class ImageLoader {
         return null;
     }
 
-    private ArrayList<URL> getImageUrls(){
+    private ArrayList<URL> getImageUrls(String town){
         String URL = "https://yandex.ru/images/search?text=" + town;
         try {
             Document html = Jsoup.connect(URL).get();
