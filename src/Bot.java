@@ -6,10 +6,10 @@ import java.io.IOException;
 
 public class Bot {
     public static void main(String[] args) {
-        ImageLoader test = new ImageLoader("Саратов");
+        ImageLoader test = new ImageLoader("Смоленск");
         //test
         int i = 0;
-        while (true){
+        while (!test.isEmpty()){
             Image img = test.getNextImage();
             if (img == null) break;
             BufferedImage bufferedImage = (BufferedImage) img;
