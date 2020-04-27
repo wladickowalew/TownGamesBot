@@ -14,7 +14,6 @@ public class ImageLoader {
     private int IMAGE_COUNT = 5;
     private String town;
     private ArrayList<URL> imageUrls;
-    private int current_image;
 
     public ImageLoader(String town){
         this.town = town;
