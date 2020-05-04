@@ -22,6 +22,10 @@ public class ImageLoader {
         return imageUrls.isEmpty();
     }
 
+    public String getNextImageURL(){
+        return imageUrls.remove(0).toString();
+    }
+
     public Image getNextImage(){
         try {
             return ImageIO.read(imageUrls.remove(0));

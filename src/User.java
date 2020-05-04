@@ -6,10 +6,13 @@ public class User {
     private ImageLoader loader;
     private String command;
 
-    public User(String town) {
+    public User() {
+        command = "begin";
+    }
+
+    public void startGame(String town){
         this.town = town;
         loader = new ImageLoader(town);
-        command = "";
     }
 
     public String getTown() {
@@ -22,6 +25,10 @@ public class User {
 
     public Image getImage() {
         return loader.getNextImage();
+    }
+
+    public String getImageURL() {
+        return loader.getNextImageURL();
     }
 
     public String getCommand() {

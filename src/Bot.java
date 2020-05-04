@@ -2,6 +2,7 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -47,7 +48,10 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     public String getRandomTown(){
-        return "Смоленск";
+        String[] towns = {"Смоленск", "Самара", "Лондон", "Амстердам", "Москва", "Берлин", "Дрезден", "Торонто"};
+        int n = towns.length;
+        int r = (int)(Math.random() * n);
+        return towns[r];
     }
 
     @Override
@@ -59,11 +63,8 @@ public class Bot extends TelegramLongPollingBot {
 
         if (text.equals("/start")) {
             sendMessage(message, "Здравствуйте, не хотите ли сыграть в одну игру? Вам предстоит увидеть изображение "+
-                                     "и отгдадать, что за город изображён на нём.");
-            User user = new User(getRandomTown());
-            user.setCommand("begin");
-            users.put(id, user);
-
+                                     "и отгдадать, что за город изображён на нём. (Да/Нет)");
+            users.put(id, new User());
             return;
         }
 
@@ -77,28 +78,45 @@ public class Bot extends TelegramLongPollingBot {
         if (command_dispatcher(message, user))   return;
     }
 
+    private void logOut(Message message, User user){
+        sendMessage(message, "Ну и пожалуйста, сам с собой играй!");
+        users.remove(message.getChatId());
+    }
+
     public boolean condition_dispatcher(Message message, User user){
         if (user.getCommand().equals("")) return false;
         String text = message.getText();
         switch (user.getCommand()){
-            case "name1":
-                user.setName(text);
-                user.setCommand("");
-                sendMessage(message, "Приятно познакомиться, " + text);
-                break;
-            case "city1":
-                user.setCity(text);
-                user.setCommand("");
-                sendMessage(message, "город успешно сохранён");
-                break;
-            case "age1":
-                try {
-                    user.setAge(Integer.parseInt(text));
-                    user.setCommand("");
-                    sendMessage(message, "Возраст успешно сохранён");
-                }catch (Exception e){
-                    sendMessage(message, "Вы ввели не целое число. Введите только целое число");
+            case "begin":
+                if (text.equals("Да")){
+                    user.setCommand("SendImage");
+                    user.startGame(getRandomTown());
+                    sendMessage(message, "Отлично, начнём игру! Что это за город? (Ответь на русском языке)");
+                    sendImage(message, user.getImageURL());
+                    break;
                 }
+                if (text.equals("Нет")){
+                   logOut(message, user);
+                   break;
+                }
+                sendMessage(message, "Ты мне втираешь какую-то дичь! Будем играть?");
+                break;
+            case "SendImage":
+                if(text.equals(user.getTown())){
+                    //win
+                    sendMessage(message, "Мои поздравления! Ты выиграл! Хочешь ещё?");
+                    user.setCommand("begin");
+                    break;
+                }
+                if(user.isEnd()){
+                    //end game
+                    sendMessage(message, "К сожалению ты не очень силён в изображениях городов. Это " +
+                                              user.getTown()+". Хочешь попробовать ещё?");
+                    user.setCommand("begin");
+                    break;
+                }
+                sendMessage(message, "Ты ошибся( Это не " + text + ". Попробуй ещё раз!");
+                sendImage(message, user.getImageURL());
                 break;
             default:
                 user.setCommand("");
@@ -110,42 +128,12 @@ public class Bot extends TelegramLongPollingBot {
 
     public boolean command_dispatcher(Message message, User user){
         String text = message.getText();
-        if (text.equals("/set_city")){
-            sendMessage(message, "Введите название города.");
-            user.setCommand("city1");
-            return true;
-        }
-
-        if (text.equals("/city")){
-            sendMessage(message, "Ваш город: " + user.getCity());
-            return true;
-        }
-
-        if (text.equals("/set_age")){
-            sendMessage(message, "Введите, сколько вам лет.");
-            user.setCommand("age1");
-            return true;
-        }
-
-        if (text.equals("/age")){
-            sendMessage(message, "Ваш возраст: " + user.getAge());
-            return true;
-        }
-
-        if (text.equals("/rename")){
-            sendMessage(message, "Введите ваше новое имя: ");
-            user.setCommand("name1");
-            return true;
-        }
-
-        if (text.equals("/info")){
-            sendMessage(message, user.getInfo());
+        if (text.equals("/stop")){
+            logOut(message, user);
             return true;
         }
         return false;
     }
-
-
 
     private void sendMessage(Message m, String text){
         SendMessage message = new SendMessage();
@@ -155,6 +143,17 @@ public class Bot extends TelegramLongPollingBot {
         //setButtons(message);
         try {
             execute(message);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendImage(Message m, String url){
+        SendPhoto photo = new SendPhoto();
+        photo.setChatId(m.getChatId());
+        photo.setPhoto(url);
+        try {
+            execute(photo);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
