@@ -30,7 +30,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private void testImages(){
-        ImageLoader test = new ImageLoader("Москва");
+        ImageLoader test = new ImageLoader("Москва", 5);
         //test
         int i = 0;
         while (!test.isEmpty()){
@@ -64,12 +64,13 @@ public class Bot extends TelegramLongPollingBot {
         if (text.equals("/start")) {
             sendMessage(message, "Здравствуйте, не хотите ли сыграть в одну игру? Вам предстоит увидеть изображение "+
                                      "и отгдадать, что за город изображён на нём. (Да/Нет)");
-            users.put(id, new User());
+            users.get(id).setCommand("begin");
             return;
         }
 
         if (!users.containsKey(id)){
-            sendMessage(message, "Ты не хочешь играть со мной!, введи /start.");
+            sendMessage(message, "Привет, "+message.getForwardSenderName()+". Чтобы начать игру введи /start.");
+            users.put(id, new User());
             return;
         }
 
@@ -80,43 +81,53 @@ public class Bot extends TelegramLongPollingBot {
 
     private void logOut(Message message, User user){
         sendMessage(message, "Ну и пожалуйста, сам с собой играй!");
-        users.remove(message.getChatId());
+        user.setCommand("");
     }
 
     public boolean condition_dispatcher(Message message, User user){
         if (user.getCommand().equals("")) return false;
         String text = message.getText();
-        switch (user.getCommand()){
+        switch (user.getCommand()) {
             case "begin":
-                if (text.equals("Да")){
+                if (text.equals("Да")) {
                     user.setCommand("SendImage");
                     user.startGame(getRandomTown());
                     sendMessage(message, "Отлично, начнём игру! Что это за город? (Ответь на русском языке)");
                     sendImage(message, user.getImageURL());
                     break;
                 }
-                if (text.equals("Нет")){
-                   logOut(message, user);
-                   break;
+                if (text.equals("Нет")) {
+                    logOut(message, user);
+                    break;
                 }
                 sendMessage(message, "Ты мне втираешь какую-то дичь! Будем играть?");
                 break;
             case "SendImage":
-                if(text.equals(user.getTown())){
+                if (text.equals(user.getTown())) {
                     //win
-                    sendMessage(message, "Мои поздравления! Ты выиграл! Хочешь ещё?");
+                    sendMessage(message, "Мои поздравления! Ты выиграл! Ты набрал: " +
+                            user.getPoints() + " очков. Хочешь ещё?");
                     user.setCommand("begin");
                     break;
                 }
-                if(user.isEnd()){
+                if (user.isEnd()) {
                     //end game
                     sendMessage(message, "К сожалению ты не очень силён в изображениях городов. Это " +
-                                              user.getTown()+". Хочешь попробовать ещё?");
+                            user.getTown() + ". Хочешь попробовать ещё?");
                     user.setCommand("begin");
                     break;
                 }
                 sendMessage(message, "Ты ошибся( Это не " + text + ". Попробуй ещё раз!");
                 sendImage(message, user.getImageURL());
+                break;
+            case "changelevel":
+                if (text.equals("лёгкий") || text.equals("средний") || text.equals("сложный") || text.equals("ХАРД")) {
+                    user.setLevel(text);
+                    sendMessage(message, "Сложность успешно установлена");
+                    user.setCommand("");
+                }else{
+                    sendMessage(message, "Я тебя не понимаю, какой уровень сложности?");
+                }
                 break;
             default:
                 user.setCommand("");
@@ -130,6 +141,15 @@ public class Bot extends TelegramLongPollingBot {
         String text = message.getText();
         if (text.equals("/stop")){
             logOut(message, user);
+            return true;
+        }
+        if (text.equals("/level")){
+            sendMessage(message, "Ваш уровень сложности: " + user.getLevel());
+            return true;
+        }
+        if (text.equals("/change_level")){
+            sendMessage(message, "Выберите уровень сложности: лёгкий, средний, сложный, ХАРД");
+            user.setCommand("changelevel");
             return true;
         }
         return false;

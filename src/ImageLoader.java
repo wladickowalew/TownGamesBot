@@ -11,10 +11,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class ImageLoader {
-    private int IMAGE_COUNT = 5;
+    private int imageCount;
     private ArrayList<URL> imageUrls;
 
-    public ImageLoader(String town){
+    public ImageLoader(String town, int count){
+        imageCount = count;
         imageUrls = getImageUrls(town);
     }
 
@@ -48,7 +49,7 @@ public class ImageLoader {
                 urls.add(new URL(url));
             }
             Collections.shuffle(urls);
-            urls = new ArrayList<>(urls.subList(0, IMAGE_COUNT));
+            urls = new ArrayList<>(urls.subList(0, imageCount));
             return urls;
         } catch (IOException e) {
             e.printStackTrace();
