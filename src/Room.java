@@ -7,15 +7,14 @@ public class Room {
     private int id;
     private String name;
     private String town;
-    private User root;
+    private Long root;
     private ArrayList<User> users;
     private ImageLoader loader;
 
-    public Room(String name, User root){
+    public Room(String name, Long root){
         id = id_generator++;
         this.root = root;
         users = new ArrayList<User>();
-        users.add(root);
         this.name = name;
     }
 
@@ -65,5 +64,11 @@ public class Room {
 
     public boolean isEnd(){
         return loader.isEmpty();
+    }
+
+    public boolean isRoot(Long user){
+        System.out.println(user);
+        System.out.println(root);
+        return root.equals(user);
     }
 }

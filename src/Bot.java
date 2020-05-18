@@ -131,7 +131,8 @@ public class Bot extends TelegramLongPollingBot {
                 }
                 break;
             case "createRoom":
-                Room room = new Room(text, user);
+                Room room = new Room(text, message.getChatId());
+                room.addUser(user);
                 rooms.put(room.getId(), room);
                 sendMessage(message, "Вы создали комнату: " + text + ". Её id: " + room.getId());
                 user.setCommand("");
@@ -139,13 +140,21 @@ public class Bot extends TelegramLongPollingBot {
             case "removeRoom":
                 try{
                     int room_id = Integer.parseInt(text);
-                    rooms.remove(room_id);
-                    sendMessage(message, "Вы успешно удалили комнату");
+                    if (rooms.get(room_id).isRoot(message.getChatId())) {
+                        rooms.remove(room_id);
+                        sendMessage(message, "Вы успешно удалили комнату");
+                    }else{
+                        sendMessage(message, "Вы не можете удалить эту комнату");
+                    }
                     user.setCommand("");
+                }catch(NullPointerException e){
+                    e.printStackTrace();
+                    sendMessage(message, "Комнаты с таким id не существует");
                 }catch(Exception e){
                     e.printStackTrace();
                     sendMessage(message, "Я тебя не понимаю, введи id комнаты?");
                 }
+                break;
             default:
                 user.setCommand("");
                 sendMessage(message, "Неизвестная ошибка");
@@ -172,10 +181,24 @@ public class Bot extends TelegramLongPollingBot {
         if (text.equals("/new_room")){
             sendMessage(message, "Введите название вашей комнаты");
             user.setCommand("createRoom");
+            return true;
         }
         if (text.equals("/remove_room")){
             sendMessage(message, "Введите id комнаты");
             user.setCommand("removeRoom");
+            return true;
+        }
+        if (text.equals("/show_rooms")){
+            StringBuilder builder = new StringBuilder();
+            if (rooms.isEmpty()){
+                sendMessage(message, "Комант, увы, нет(");
+                return true;
+            }
+            for (Room room: rooms.values()){
+                builder.append(room.getName()+" id: "+room.getId() + "\n");
+            }
+            sendMessage(message, builder.toString());
+            return true;
         }
         return false;
     }
