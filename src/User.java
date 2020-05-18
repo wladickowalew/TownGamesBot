@@ -2,6 +2,8 @@ import java.awt.*;
 
 public class User {
 
+    private String name;
+    private Long chatID;
     private String town;
     private ImageLoader loader;
     private String command;
@@ -9,9 +11,16 @@ public class User {
     private int attempts;
     private int points;
 
-    public User() {
+    public User(Long id, String name) {
+        this.name = name;
+        chatID = id;
         command = "";
         level = 3;
+    }
+
+    @Override
+    public String toString() {
+        return "name=" + name +", ID=" + chatID;
     }
 
     public void startGame(String town){
@@ -76,4 +85,9 @@ public class User {
     public boolean isEnd(){
         return attempts == 0;
     }
+
+    public Long getChatID() {
+        return chatID;
+    }
+
 }

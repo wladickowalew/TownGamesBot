@@ -70,8 +70,9 @@ public class Bot extends TelegramLongPollingBot {
         }
 
         if (!users.containsKey(id)){
-            sendMessage(message, "Привет, "+message.getForwardSenderName()+". Чтобы начать игру введи /start.");
-            users.put(id, new User());
+            String name = message.getContact().getFirstName() + " " + message.getContact().getLastName();
+            sendMessage(message, "Привет, "+name+". Чтобы начать игру введи /start.");
+            users.put(id, new User(message.getChatId(), name));
             return;
         }
 
@@ -155,6 +156,53 @@ public class Bot extends TelegramLongPollingBot {
                     sendMessage(message, "Я тебя не понимаю, введи id комнаты?");
                 }
                 break;
+            case "toRoom":
+                try{
+                    int room_id = Integer.parseInt(text);
+                    room = rooms.get(room_id);
+                    room.addUser(user);
+                    sendMessage(message, "Вы в комнате " + room.getName());
+                    user.setCommand("");
+                }catch(NullPointerException e){
+                    e.printStackTrace();
+                    sendMessage(message, "Комнаты с таким id не существует");
+                }catch(Exception e){
+                    e.printStackTrace();
+                    sendMessage(message, "Я тебя не понимаю, введи id комнаты?");
+                }
+                break;
+            case "fromRoom":
+                try{
+                    int room_id = Integer.parseInt(text);
+                    rooms.get(room_id).removeUser(user);
+                    sendMessage(message, "Вы не в комнате");
+                    user.setCommand("");
+                }catch(NullPointerException e){
+                    e.printStackTrace();
+                    sendMessage(message, "Комнаты с таким id не существует");
+                }catch(Exception e){
+                    e.printStackTrace();
+                    sendMessage(message, "Я тебя не понимаю, введи id комнаты?");
+                }
+                break;
+            case "roomUsers":
+                try{
+                    int room_id = Integer.parseInt(text);
+                    room = rooms.get(room_id);
+                    if (room.isRoot(user.getChatID())) {
+                        sendMessage(message, room.getUsers());
+                    }else{
+                        sendMessage(message, "Вы не можете просмотреть пользователей комнаты");
+                    }
+                    user.setCommand("");
+                }catch(NullPointerException e){
+                    e.printStackTrace();
+                    sendMessage(message, "Комнаты с таким id не существует");
+                }catch(Exception e){
+                    e.printStackTrace();
+                    sendMessage(message, "Я тебя не понимаю, введи id комнаты?");
+                }
+                break;
             default:
                 user.setCommand("");
                 sendMessage(message, "Неизвестная ошибка");
@@ -198,6 +246,21 @@ public class Bot extends TelegramLongPollingBot {
                 builder.append(room.getName()+" id: "+room.getId() + "\n");
             }
             sendMessage(message, builder.toString());
+            return true;
+        }
+        if (text.equals("/to_room")){
+            sendMessage(message, "Введите id комнаты");
+            user.setCommand("toRoom");
+            return true;
+        }
+        if (text.equals("/from_room")){
+            sendMessage(message, "Введите id комнаты");
+            user.setCommand("fromRoom");
+            return true;
+        }
+        if (text.equals("/show_room_users")){
+            sendMessage(message, "Введите id комнаты");
+            user.setCommand("roomUsers");
             return true;
         }
         return false;

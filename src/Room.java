@@ -19,11 +19,21 @@ public class Room {
     }
 
     public void addUser(User user){
-        users.add(user);
+        if (!users.contains(user))
+            users.add(user);
     }
 
     public void removeUser(User user){
-        users.remove(user);
+        if (users.contains(user))
+            users.remove(user);
+    }
+
+    public String getUsers(){
+        StringBuilder builder = new StringBuilder();
+        for (User user: users){
+            builder.append(user.toString() + "\n");
+        }
+        return builder.toString();
     }
 
     public int getId() {
