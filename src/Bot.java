@@ -18,6 +18,7 @@ import java.util.HashMap;
 public class Bot extends TelegramLongPollingBot {
 
     public HashMap<Long, User> users = new HashMap<>();
+    public HashMap<Integer, Room> rooms = new HashMap<>();
 
     public static void main(String[] args) {
         ApiContextInitializer.init();
@@ -129,6 +130,22 @@ public class Bot extends TelegramLongPollingBot {
                     sendMessage(message, "Я тебя не понимаю, какой уровень сложности?");
                 }
                 break;
+            case "createRoom":
+                Room room = new Room(text, user);
+                rooms.put(room.getId(), room);
+                sendMessage(message, "Вы создали комнату: " + text + ". Её id: " + room.getId());
+                user.setCommand("");
+                break;
+            case "removeRoom":
+                try{
+                    int room_id = Integer.parseInt(text);
+                    rooms.remove(room_id);
+                    sendMessage(message, "Вы успешно удалили комнату");
+                    user.setCommand("");
+                }catch(Exception e){
+                    e.printStackTrace();
+                    sendMessage(message, "Я тебя не понимаю, введи id комнаты?");
+                }
             default:
                 user.setCommand("");
                 sendMessage(message, "Неизвестная ошибка");
@@ -151,6 +168,14 @@ public class Bot extends TelegramLongPollingBot {
             sendMessage(message, "Выберите уровень сложности: лёгкий, средний, сложный, ХАРД");
             user.setCommand("changelevel");
             return true;
+        }
+        if (text.equals("/new_room")){
+            sendMessage(message, "Введите название вашей комнаты");
+            user.setCommand("createRoom");
+        }
+        if (text.equals("/remove_room")){
+            sendMessage(message, "Введите id комнаты");
+            user.setCommand("removeRoom");
         }
         return false;
     }
