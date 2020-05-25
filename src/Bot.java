@@ -70,7 +70,7 @@ public class Bot extends TelegramLongPollingBot {
         }
 
         if (!users.containsKey(id)){
-            String name = message.getContact().getFirstName() + " " + message.getContact().getLastName();
+            String name = message.getFrom().getFirstName() + " " + message.getFrom().getLastName();
             sendMessage(message, "Привет, "+name+". Чтобы начать игру введи /start.");
             users.put(id, new User(message.getChatId(), name));
             return;
@@ -213,6 +213,10 @@ public class Bot extends TelegramLongPollingBot {
 
     public boolean command_dispatcher(Message message, User user){
         String text = message.getText();
+        if (text.equals("/help")) {
+            sendMessage(message, textHelp());
+            return true;
+        }
         if (text.equals("/stop")){
             logOut(message, user);
             return true;
@@ -264,6 +268,22 @@ public class Bot extends TelegramLongPollingBot {
             return true;
         }
         return false;
+    }
+
+    private String textHelp() {
+        return "Привет, я бот для игры в города и умею мого чего:\n" +
+                "/help - выведет это сообщение,\n" +
+                "/start - начать общение с ботом игру,\n" +
+                "/level - посмотреть урвень сложности,\n" +
+                "/change_level - изменить уровень сложности,\n" +
+                "/start_game - начать игру\n"+
+                "/stop  - остановить игру/операцию\n"+
+                "/new_room - создать новую комнату,\n" +
+                "/remove_room - удалить комнату,\n" +
+                "/show_rooms - показать все комнаты\n"+
+                "/to_room - войти в комнату\n" +
+                "/from_room - выйти из комнаты\n"+
+                "/show_room_users - показать пользователей в комнате\n";
     }
 
     private void sendMessage(Message m, String text){
