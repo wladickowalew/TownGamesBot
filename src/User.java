@@ -49,6 +49,8 @@ public class User {
         sendMessage("Игра в комнате началась!");
     }
 
+    public void sendImage()
+
     public void sendMessage(String text){
         Main.sendMessage(chatID, text);
     }

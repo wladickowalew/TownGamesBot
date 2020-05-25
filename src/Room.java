@@ -11,6 +11,8 @@ public class Room {
     private Long root;
     private ArrayList<User> users;
     private ImageLoader loader;
+    private int rounds = 3;
+    private int current_round;
 
     public Room(String name, Long root){
         id = id_generator++;
@@ -65,10 +67,21 @@ public class Room {
     }
 
     public void startRoom(){
+        current_round = 0;
+        for (User user: users){
+            user.startGameInRoom(loader);
+        }
+    }
+
+    public void checkEndRound(){
+
+    }
+
+    public void newRound(){
         this.town = getRandomTown();
         loader = new ImageLoader(town, 5);
         for (User user: users){
-            user.startGameInRoom(loader);
+            user.startRoundInRoom(loader);
         }
     }
 
