@@ -1,3 +1,4 @@
+import java.beans.Expression;
 import java.util.ArrayList;
 
 public class Room {
@@ -66,6 +67,9 @@ public class Room {
     public void startRoom(){
         this.town = getRandomTown();
         loader = new ImageLoader(town, 5);
+        for (User user: users){
+            user.startGameInRoom(loader);
+        }
     }
 
     public String getImageURL() {

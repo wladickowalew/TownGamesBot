@@ -10,6 +10,7 @@ public class User {
     private int level;     //коэффициент за уровень сложности
     private int attempts;
     private int points;
+    private boolean in_room;
 
     public User(Long id, String name) {
         this.name = name;
@@ -32,6 +33,24 @@ public class User {
             case 40: attempts = 1; break;
         }
         loader = new ImageLoader(town, attempts);
+        in_room = false;
+    }
+
+    public void startGameInRoom(ImageLoader loader){
+        setLoader(loader);
+        in_room = true;
+        points = 0;
+        switch (level){
+            case 1:  attempts = 8; break;
+            case 3:  attempts = 5; break;
+            case 7:  attempts = 3; break;
+            case 40: attempts = 1; break;
+        }
+        sendMessage("Игра в комнате началась!");
+    }
+
+    public void sendMessage(String text){
+        Main.sendMessage(chatID, text);
     }
 
     public String getTown() {
@@ -90,4 +109,7 @@ public class User {
         return chatID;
     }
 
+    public void setLoader(ImageLoader loader) {
+        this.loader = loader;
+    }
 }

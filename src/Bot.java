@@ -20,14 +20,17 @@ public class Bot extends TelegramLongPollingBot {
     public HashMap<Long, User> users = new HashMap<>();
     public HashMap<Integer, Room> rooms = new HashMap<>();
 
-    public static void main(String[] args) {
+    public static Bot init(){
         ApiContextInitializer.init();
         TelegramBotsApi botapi = new TelegramBotsApi();
         try {
-            botapi.registerBot(new Bot());
+            Bot b = new Bot();
+            botapi.registerBot(b);
+            return b;
         } catch (TelegramApiRequestException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     private void testImages(){
@@ -63,9 +66,8 @@ public class Bot extends TelegramLongPollingBot {
         long id = message.getChatId();
 
         if (text.equals("/start")) {
-            sendMessage(message, "Здравствуйте, не хотите ли сыграть в одну игру? Вам предстоит увидеть изображение "+
-                                     "и отгдадать, что за город изображён на нём. (Да/Нет)");
-            users.get(id).setCommand("begin");
+            sendMessage(message, "Здравствуйте, вот, что я могу!");
+            sendMessage(message, textHelp());
             return;
         }
 
@@ -203,6 +205,24 @@ public class Bot extends TelegramLongPollingBot {
                     sendMessage(message, "Я тебя не понимаю, введи id комнаты?");
                 }
                 break;
+            case "startRoom":
+                try{
+                    int room_id = Integer.parseInt(text);
+                    room = rooms.get(room_id);
+                    if (room.isRoot(user.getChatID())) {
+                        room.startRoom();
+                    }else{
+                        sendMessage(message, "Вы не можете запустить игру в этой комнате");
+                    }
+                    user.setCommand("");
+                }catch(NullPointerException e){
+                    e.printStackTrace();
+                    sendMessage(message, "Комнаты с таким id не существует");
+                }catch(Exception e){
+                    e.printStackTrace();
+                    sendMessage(message, "Я тебя не понимаю, введи id комнаты?");
+                }
+                break;
             default:
                 user.setCommand("");
                 sendMessage(message, "Неизвестная ошибка");
@@ -215,6 +235,12 @@ public class Bot extends TelegramLongPollingBot {
         String text = message.getText();
         if (text.equals("/help")) {
             sendMessage(message, textHelp());
+            return true;
+        }
+        if (text.equals("/start_game")) {
+            sendMessage(message, "Здравствуйте, не хотите ли сыграть в одну игру? Вам предстоит увидеть изображение "+
+                    "и отгдадать, что за город изображён на нём. (Да/Нет)");
+            users.get(message.getChatId()).setCommand("begin");
             return true;
         }
         if (text.equals("/stop")){
@@ -267,6 +293,11 @@ public class Bot extends TelegramLongPollingBot {
             user.setCommand("roomUsers");
             return true;
         }
+        if (text.equals("/start_room")){
+            sendMessage(message, "Введите id комнаты");
+            user.setCommand("startRoom");
+            return true;
+        }
         return false;
     }
 
@@ -286,9 +317,9 @@ public class Bot extends TelegramLongPollingBot {
                 "/show_room_users - показать пользователей в комнате\n";
     }
 
-    private void sendMessage(Message m, String text){
+    public void sendMessage(Long chatId, String text){
         SendMessage message = new SendMessage();
-        message.setChatId(m.getChatId());
+        message.setChatId(chatId);
         message.setText(text);
         //message.enableMarkdown(true);
         //setButtons(message);
@@ -299,15 +330,23 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendImage(Message m, String url){
+    public void sendImage(Long chatId, String url){
         SendPhoto photo = new SendPhoto();
-        photo.setChatId(m.getChatId());
+        photo.setChatId(chatId);
         photo.setPhoto(url);
         try {
             execute(photo);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
+    }
+
+    private void sendMessage(Message m, String text){
+        sendMessage(m.getChatId(), text);
+    }
+
+    private void sendImage(Message m, String url){
+       sendImage(m.getChatId(), url);
     }
 
     @Override
