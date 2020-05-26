@@ -11,6 +11,8 @@ public class User {
     private int attempts;
     private int points;
     private boolean in_room;
+    private int room_id;
+    private boolean end_round;
 
     public User(Long id, String name) {
         this.name = name;
@@ -36,8 +38,7 @@ public class User {
         in_room = false;
     }
 
-    public void startGameInRoom(ImageLoader loader){
-        setLoader(loader);
+    public void startGameInRoom(){
         in_room = true;
         points = 0;
         switch (level){
@@ -49,7 +50,17 @@ public class User {
         sendMessage("Игра в комнате началась!");
     }
 
-    public void sendImage()
+    public void startRoundInRoom(ImageLoader loader, int round){
+        setLoader(loader);
+        end_round = false;
+        sendMessage("Роунд: " + (round + 1));
+        command = "SendImage";
+        sendImage();
+    }
+
+    public void sendImage(){
+        Main.sendImage(chatID, getImageURL());
+    }
 
     public void sendMessage(String text){
         Main.sendMessage(chatID, text);
@@ -99,8 +110,13 @@ public class User {
         }
     }
 
+    public void end_round(boolean win){
+        end_round = true;
+        points += (attempts + 1) * level;
+    }
+
     public int getPoints(){
-        return (attempts + 1) * level;
+        return points;
     }
 
     public boolean isEnd(){
@@ -113,5 +129,29 @@ public class User {
 
     public void setLoader(ImageLoader loader) {
         this.loader = loader;
+    }
+
+    public void setPoints(int points) {
+        this.points = points;
+    }
+
+    public boolean isIn_room() {
+        return in_room;
+    }
+
+    public void setIn_room(boolean in_room) {
+        this.in_room = in_room;
+    }
+
+    public int getRoom_id() {
+        return room_id;
+    }
+
+    public void setRoom_id(int room_id) {
+        this.room_id = room_id;
+    }
+
+    public boolean isEnd_round() {
+        return end_round;
     }
 }

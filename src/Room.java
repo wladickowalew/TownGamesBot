@@ -22,13 +22,19 @@ public class Room {
     }
 
     public void addUser(User user){
-        if (!users.contains(user))
+        if (!users.contains(user)) {
             users.add(user);
+            user.setRoom_id(id);
+            user.setIn_room(true);
+        }
     }
 
     public void removeUser(User user){
-        if (users.contains(user))
+        if (users.contains(user)) {
             users.remove(user);
+            user.setRoom_id(-1);
+            user.setIn_room(false);
+        }
     }
 
     public String getUsers(){
@@ -69,19 +75,27 @@ public class Room {
     public void startRoom(){
         current_round = 0;
         for (User user: users){
-            user.startGameInRoom(loader);
+            user.startGameInRoom();
         }
+        newRound();
     }
 
     public void checkEndRound(){
-
+        System.out.println("Check end Round");
+        for (User user: users){
+            if (!user.isEnd_round()) return;
+        }
+        if (++current_round < rounds)
+            newRound();
+        else
+            System.out.println("Здесь должны быть результаты игры");
     }
 
     public void newRound(){
         this.town = getRandomTown();
         loader = new ImageLoader(town, 5);
         for (User user: users){
-            user.startRoundInRoom(loader);
+            user.startRoundInRoom(loader, current_round);
         }
     }
 

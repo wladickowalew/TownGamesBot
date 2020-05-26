@@ -109,16 +109,30 @@ public class Bot extends TelegramLongPollingBot {
             case "SendImage":
                 if (text.equals(user.getTown())) {
                     //win
-                    sendMessage(message, "Мои поздравления! Ты выиграл! Ты набрал: " +
-                            user.getPoints() + " очков. Хочешь ещё?");
-                    user.setCommand("begin");
+                    user.end_round(true);
+                    if (user.isIn_room()) {
+                        rooms.get(user.getRoom_id()).checkEndRound();
+                        sendMessage(message, "Ты угадал! Роунд Окончен! Ты набрал всего : " +
+                                user.getPoints() + " очков. Ожидай следующего раунда");
+                    }else {
+                        sendMessage(message, "Мои поздравления! Ты выиграл! Ты набрал: " +
+                                user.getPoints() + " очков. Хочешь ещё?");
+                        user.setCommand("begin");
+                    }
                     break;
                 }
                 if (user.isEnd()) {
                     //end game
-                    sendMessage(message, "К сожалению ты не очень силён в изображениях городов. Это " +
-                            user.getTown() + ". Хочешь попробовать ещё?");
-                    user.setCommand("begin");
+                    user.end_round(false);
+                    if (user.isIn_room()) {
+                        rooms.get(user.getRoom_id()).checkEndRound();
+                        sendMessage(message, "Ты не угадал( Роунд Окончен! Ты набрал всего : " +
+                                user.getPoints() + " очков. Ожидай следующего раунда");
+                    }else {
+                        sendMessage(message, "К сожалению ты не очень силён в изображениях городов. Это " +
+                                user.getTown() + ". Хочешь попробовать ещё?");
+                        user.setCommand("begin");
+                    }
                     break;
                 }
                 sendMessage(message, "Ты ошибся( Это не " + text + ". Попробуй ещё раз!");
