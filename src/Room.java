@@ -87,15 +87,25 @@ public class Room {
         }
         if (++current_round < rounds)
             newRound();
-        else
-            System.out.println("Здесь должны быть результаты игры");
+        else{
+            StringBuilder builder = new StringBuilder();
+            builder.append("Игра окончена! Результаты:\n");
+            for (User user: users){
+                builder.append(user.toString() + " points: " + user.getPoints() + "\n");
+            }
+            String ans = builder.toString();
+            for (User user: users){
+                user.sendMessage(ans);
+                user.end_room_game();
+            }
+        }
     }
 
     public void newRound(){
         this.town = getRandomTown();
         loader = new ImageLoader(town, 5);
         for (User user: users){
-            user.startRoundInRoom(loader, current_round);
+            user.startRoundInRoom(loader.clone(), current_round, town);
         }
     }
 

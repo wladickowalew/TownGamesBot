@@ -62,7 +62,6 @@ public class Bot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         Message message = update.getMessage();
         String text = message.getText();
-        System.out.println(text);
         long id = message.getChatId();
 
         if (text.equals("/start")) {
@@ -79,6 +78,7 @@ public class Bot extends TelegramLongPollingBot {
         }
 
         User user = users.get(id);
+        System.out.println(user + ": " + text);
         if (condition_dispatcher(message, user)) return;
         if (command_dispatcher(message, user))   return;
     }
@@ -112,7 +112,7 @@ public class Bot extends TelegramLongPollingBot {
                     user.end_round(true);
                     if (user.isIn_room()) {
                         rooms.get(user.getRoom_id()).checkEndRound();
-                        sendMessage(message, "Ты угадал! Роунд Окончен! Ты набрал всего : " +
+                        sendMessage(message, "Ты угадал! Раунд Окончен! Ты набрал всего : " +
                                 user.getPoints() + " очков. Ожидай следующего раунда");
                     }else {
                         sendMessage(message, "Мои поздравления! Ты выиграл! Ты набрал: " +
@@ -126,7 +126,7 @@ public class Bot extends TelegramLongPollingBot {
                     user.end_round(false);
                     if (user.isIn_room()) {
                         rooms.get(user.getRoom_id()).checkEndRound();
-                        sendMessage(message, "Ты не угадал( Роунд Окончен! Ты набрал всего : " +
+                        sendMessage(message, "Ты не угадал( Раунд Окончен! Ты набрал всего : " +
                                 user.getPoints() + " очков. Ожидай следующего раунда");
                     }else {
                         sendMessage(message, "К сожалению ты не очень силён в изображениях городов. Это " +
@@ -227,8 +227,8 @@ public class Bot extends TelegramLongPollingBot {
                         room.startRoom();
                     }else{
                         sendMessage(message, "Вы не можете запустить игру в этой комнате");
+                        user.setCommand("");
                     }
-                    user.setCommand("");
                 }catch(NullPointerException e){
                     e.printStackTrace();
                     sendMessage(message, "Комнаты с таким id не существует");
@@ -236,6 +236,9 @@ public class Bot extends TelegramLongPollingBot {
                     e.printStackTrace();
                     sendMessage(message, "Я тебя не понимаю, введи id комнаты?");
                 }
+                break;
+            case "Waiting":
+                sendMessage(message, "Ожидайте продолжения");
                 break;
             default:
                 user.setCommand("");
@@ -328,13 +331,15 @@ public class Bot extends TelegramLongPollingBot {
                 "/show_rooms - показать все комнаты\n"+
                 "/to_room - войти в комнату\n" +
                 "/from_room - выйти из комнаты\n"+
-                "/show_room_users - показать пользователей в комнате\n";
+                "/show_room_users - показать пользователей в комнате\n"+
+                "/start_room - запуск игры в комнате";
     }
 
     public void sendMessage(Long chatId, String text){
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(text);
+        System.out.println("Message "+text+" Send to " + chatId);
         //message.enableMarkdown(true);
         //setButtons(message);
         try {
@@ -348,6 +353,7 @@ public class Bot extends TelegramLongPollingBot {
         SendPhoto photo = new SendPhoto();
         photo.setChatId(chatId);
         photo.setPhoto(url);
+        System.out.println("Photo send to " + chatId);
         try {
             execute(photo);
         } catch (TelegramApiException e) {

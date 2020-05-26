@@ -41,19 +41,21 @@ public class User {
     public void startGameInRoom(){
         in_room = true;
         points = 0;
+        sendMessage("Игра в комнате началась!");
+    }
+
+    public void startRoundInRoom(ImageLoader loader, int round, String town){
+        this.town = town;
+        setLoader(loader);
+        end_round = false;
         switch (level){
             case 1:  attempts = 8; break;
             case 3:  attempts = 5; break;
             case 7:  attempts = 3; break;
             case 40: attempts = 1; break;
         }
-        sendMessage("Игра в комнате началась!");
-    }
-
-    public void startRoundInRoom(ImageLoader loader, int round){
-        setLoader(loader);
-        end_round = false;
-        sendMessage("Роунд: " + (round + 1));
+        System.out.println(this + " list " + loader.getImageUrls());
+        sendMessage("Раунд: " + (round + 1));
         command = "SendImage";
         sendImage();
     }
@@ -112,7 +114,13 @@ public class User {
 
     public void end_round(boolean win){
         end_round = true;
-        points += (attempts + 1) * level;
+        if (win)
+            points += (attempts + 1) * level;
+        command = "Waiting";
+    }
+
+    public void end_room_game(){
+        command = "";
     }
 
     public int getPoints(){

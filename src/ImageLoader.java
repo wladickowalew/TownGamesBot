@@ -19,6 +19,16 @@ public class ImageLoader {
         imageUrls = getImageUrls(town);
     }
 
+    public ImageLoader(ImageLoader loader){
+        imageCount = loader.getImageCount();
+        imageUrls = (ArrayList<URL>) loader.getImageUrls().clone();
+    }
+
+    @Override
+    protected ImageLoader clone() {
+        return new ImageLoader(this);
+    }
+
     public boolean isEmpty(){
         return imageUrls.isEmpty();
     }
@@ -34,6 +44,14 @@ public class ImageLoader {
             System.out.println("Картинки кончились");
         }
         return null;
+    }
+
+    public int getImageCount() {
+        return imageCount;
+    }
+
+    public ArrayList<URL> getImageUrls() {
+        return imageUrls;
     }
 
     private ArrayList<URL> getImageUrls(String town){
@@ -56,4 +74,5 @@ public class ImageLoader {
         }
         return null;
     }
+
 }
